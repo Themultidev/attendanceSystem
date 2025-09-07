@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    width: 350px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    border: 2px solid black;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    margin-left:25px ;
+}
+
+video {
+    width: 100%;
+    display: block;
+    
+}
+
+#face-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#match-result {
+    display: none;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#match-result p {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+#match-result button {
+    width: 48%;
+    display: inline-block;
+}
+
+#confirm {
+    background-color: #28a745;
+}
+
+#confirm:hover {
+    background-color: #218838;
+}
+
+#retry {
+    background-color: #dc3545;
+}
+
+#retry:hover {
+    background-color: #c82333;
+}

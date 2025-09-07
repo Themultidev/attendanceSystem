@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Verification</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Student Verification</h2>
+        <div class="video-container">
+            <video id="video" autoplay></video>
+            <canvas id="face-guide"></canvas>
+        </div>
+        <button type="button" id="capture">Capture Face</button>
+        <p id="status"></p>
+
+        <div id="match-result" style="display: none;">
+            <p>Name: <span id="student-name"></span></p>
+            <p>Matric No: <span id="matric-no"></span></p>
+            <button id="confirm">Yes</button>
+            <button id="retry">No</button>
+        </div>
+
+        <button type="submit" id="submit">Submit</button>
+
+        <p id="attendance-status"></p>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@latest/dist/face-api.min.js"></script>
+
+    <script defer type="module" src="faceModel.js"></script>
+    <script defer type="module" src="script.js"></script>
+</body>
+</html>

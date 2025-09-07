@@ -1,0 +1,57 @@
+const { GoogleSpreadsheet } = require("google-spreadsheet");
+const { JWT } = require("google-auth-library");
+require("dotenv").config();
+
+const MAIN_SHEET_ID = process.env.GOOGLE_SHEET_ID;
+const LECTURER_SHEET_ID = process.env.GOOGLE_LECTURER_SHEET_ID;
+
+const getSheet = async (sheetId) => {
+    const doc = new GoogleSpreadsheet(sheetId);
+    const auth = new JWT({
+        email: process.env.GOOGLE_CLIENT_EMAIL,
+        key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    await auth.authorize();
+    doc.auth = auth;
+    await doc.loadInfo();
+    return doc.sheetsByIndex[0];
+};
+
+async function appendToMainSheet(data) {
+    const sheet = await getSheet(MAIN_SHEET_ID);
+    await sheet.addRow(data);
+    console.log("✅ Saved to main sheet.");
+}
+
+async function appendToLecturerSheet(data) {
+    const sheet = await getSheet(LECTURER_SHEET_ID);
+    await sheet.addRow(data);
+    console.log("✅ Saved to lecturer sheet.");
+}
+
+async function getAllFaceEmbeddings() {
+    const sheet = await getSheet(MAIN_SHEET_ID);
+    const rows = await sheet.getRows();
+    return rows
+        .map(row => {
+            try {
+                const embedding = JSON.parse(row.FaceData);
+                if (!Array.isArray(embedding)) return null;
+
+                return {
+                    FaceData: embedding,
+                    MatricNo: row.MatricNo?.trim() || ""
+                };
+            } catch {
+                return null;
+            }
+        })
+        .filter(row => row && row.FaceData.length === 128);
+}
+
+module.exports = {
+    appendToMainSheet,
+    appendToLecturerSheet,
+    getAllFaceEmbeddings,
+};

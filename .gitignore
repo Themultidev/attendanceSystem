@@ -1,4 +1,20 @@
-studentAt/node_modules/ 
-studentVe/node_modules/ 
-lecturerPo/node_modules/ 
-*.dll 
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Env files
+.env
+**/*.env
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+
+# FaceAPI models (too large for GitHub)
+models/
+
+# DLLs (if you have Windows build artifacts or extra libs)
+*.dll

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lecturer Portal</title>
+  
+</head>
+<link rel="stylesheet" href="style.css">
+<body>
+  <h2>Generate Attendance Link</h2>
+
+  <input type="text" id="classTitle" placeholder="class name in this formart (Class1-May26)">
+  <input type="datetime-local" id="expiryTime" placeholder="Set expiry time">
+  <input type="text" id="allowedIP" placeholder="Enter allowed WiFi IP address">
+
+  <button onclick="generateLink()">Generate Link</button>
+
+  <div class="result" id="generatedLink"></div>
+
+  <script>
+    async function generateLink() {
+      const classTitle = document.getElementById("classTitle").value;
+      const expiryTime = document.getElementById("expiryTime").value;
+      const allowedIP = document.getElementById("allowedIP").value;
+
+      const response = await fetch("http://localhost:7000/generate-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ classTitle, expiryTime, allowedIP })
+      });
+
+      const data = await response.json();
+      const output = document.getElementById("generatedLink");
+      if (response.ok) {
+        output.innerHTML = `<strong>Generated Link:</strong><br><a href="${data.link}" target="_blank">${data.link}</a>`;
+      } else {
+        output.innerHTML = `<span style="color:red;">${data.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
