@@ -47,17 +47,26 @@ function drawFaceGuide() {
     guideCtx.fillText("Align your face within the oval", width / 2, height - 20);
 }
 
-// 🎥 Start camera
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then((stream) => {
+// 🎥 Start camera (mobile-friendly)
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" } // "environment" for back camera
+        });
         video.srcObject = stream;
+        await video.play();
+
         video.addEventListener("loadedmetadata", drawFaceGuide);
         video.addEventListener("resize", drawFaceGuide);
-    })
-    .catch((err) => {
+    } catch (err) {
         console.error("Camera error: ", err);
-        alert("Error accessing camera.");
-    });
+        alert("Error accessing camera: " + err.message);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", startCamera);
+
+
 
 // 🤖 Load face model
 async function initializeFaceModel() {
