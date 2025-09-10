@@ -33,7 +33,7 @@ app.post("/generate-link", (req, res) => {
     allowedIP,
   }, SECRET_KEY, { expiresIn: "2h" });
 
-  const fullLink = `https://your-verification-page.com/verify?token=${token}`;
+  const fullLink = `https://verificationpage.onrender.com/verify?token=${token}`;
   res.json({ link: fullLink });
 });
 

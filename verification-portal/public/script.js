@@ -13,17 +13,32 @@ const faceGuide = document.getElementById("face-guide");
 const guideCtx = faceGuide.getContext("2d");
 
 let modelLoaded = false;
-let matchedMatric = null; // store matched matric
+let matchedMatric = null;
 let classToken = new URLSearchParams(window.location.search).get("token");
 
-// 🎨 Draw face guide
-function drawFaceGuide() {
-    const width = video.offsetWidth;
-    const height = video.offsetHeight;
+
+// 📐 Resize canvas to match video
+function resizeCanvas() {
+    const width = video.videoWidth || video.clientWidth;
+    const height = video.videoHeight || video.clientHeight;
+
     faceGuide.width = width;
     faceGuide.height = height;
 
-    guideCtx.clearRect(0, 0, width, height);
+    // Match CSS size to keep alignment
+    faceGuide.style.width = video.clientWidth + "px";
+    faceGuide.style.height = video.clientHeight + "px";
+}
+
+
+// 🎨 Draw face guide overlay
+function drawFaceGuide() {
+    resizeCanvas();
+
+    guideCtx.clearRect(0, 0, faceGuide.width, faceGuide.height);
+
+    const width = faceGuide.width;
+    const height = faceGuide.height;
 
     // Oval
     guideCtx.beginPath();
@@ -47,17 +62,22 @@ function drawFaceGuide() {
     guideCtx.fillText("Align your face within the oval", width / 2, height - 20);
 }
 
+
 // 🎥 Start camera (mobile-friendly)
 async function startCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" } // "environment" for back camera
+            video: { facingMode: "user" } // front camera
         });
         video.srcObject = stream;
-        await video.play();
 
-        video.addEventListener("loadedmetadata", drawFaceGuide);
-        video.addEventListener("resize", drawFaceGuide);
+        video.onloadedmetadata = () => {
+            video.play();
+            drawFaceGuide();
+        };
+
+        // Redraw if orientation/size changes
+        window.addEventListener("resize", drawFaceGuide);
     } catch (err) {
         console.error("Camera error: ", err);
         alert("Error accessing camera: " + err.message);
@@ -67,13 +87,13 @@ async function startCamera() {
 document.addEventListener("DOMContentLoaded", startCamera);
 
 
-
 // 🤖 Load face model
 async function initializeFaceModel() {
     await loadFaceModel();
     modelLoaded = true;
 }
 initializeFaceModel();
+
 
 // 🎯 Capture & verify
 captureBtn.addEventListener("click", async () => {
@@ -104,12 +124,10 @@ captureBtn.addEventListener("click", async () => {
             const result = await response.json();
 
             if (result.student) {
-                // ✅ Store matched student info
                 matchedMatric = result.student.matricNo;
                 studentName.innerText = result.student.name;
                 matricNo.innerText = result.student.matricNo;
 
-                // Show UI
                 matchResult.style.display = "block";
                 statusMsg.innerText = "Face verified successfully ✅";
                 attendanceStatus.innerText = "Click confirm to mark attendance.";
@@ -124,6 +142,7 @@ captureBtn.addEventListener("click", async () => {
         alert("No face detected. Please try again.");
     }
 });
+
 
 // ✅ Confirm button — mark attendance
 confirmBtn.addEventListener("click", async () => {
@@ -159,6 +178,7 @@ confirmBtn.addEventListener("click", async () => {
         console.error(err);
     }
 });
+
 
 // 🔄 Retry button
 retryBtn.addEventListener("click", () => {
