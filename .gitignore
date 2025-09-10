@@ -18,3 +18,5 @@ models/
 
 # DLLs (if you have Windows build artifacts or extra libs)
 *.dll
+config/credentials.json
+registration-portal/config/credentials.json.json
