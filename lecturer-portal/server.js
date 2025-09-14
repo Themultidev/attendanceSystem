@@ -11,15 +11,11 @@ const PORT = process.env.PORT || 7000;
 
 app.use(cors());
 app.use(bodyParser.json());
-
-// Serve static frontend files from /public
-
 app.use(express.static(path.join(__dirname, "public")));
 
+const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-const SECRET_KEY = process.env.JWT_SECRET_KEY; 
-
-// 1. Generate Attendance Link
+// ✅ Generate Attendance Link
 app.post("/generate-link", (req, res) => {
   const { classTitle, expiryTime, allowedIP } = req.body;
 
@@ -27,11 +23,16 @@ app.post("/generate-link", (req, res) => {
     return res.status(400).json({ message: "Missing fields" });
   }
 
-  const token = jwt.sign({
-    classTitle,
-    expiryTime,
-    allowedIP,
-  }, SECRET_KEY, { expiresIn: "2h" });
+  // ✅ expiryTime is already UTC (from frontend)
+  const token = jwt.sign(
+    {
+      classTitle,
+      expiryTime, // lecturer-set UTC deadline
+      allowedIP,
+    },
+    SECRET_KEY
+    // ❌ removed { expiresIn: "2h" }
+  );
 
   const fullLink = `https://verificationpage.onrender.com/verify?token=${token}`;
   res.json({ link: fullLink });

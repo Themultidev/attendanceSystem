@@ -20,24 +20,28 @@
 
   <script>
     async function generateLink() {
-      const classTitle = document.getElementById("classTitle").value;
-      const expiryTime = document.getElementById("expiryTime").value;
-      const allowedIP = document.getElementById("allowedIP").value;
+    const classTitle = document.getElementById("classTitle").value;
+    const expiryTimeLocal = document.getElementById("expiryTime").value;
+    const allowedIP = document.getElementById("allowedIP").value;
 
-      const response = await fetch("https://lecturer-portal-jo84.onrender.com/generate-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ classTitle, expiryTime, allowedIP })
-      });
+    // ✅ Convert local datetime to UTC string
+    const expiryTime = new Date(expiryTimeLocal).toISOString();
 
-      const data = await response.json();
-      const output = document.getElementById("generatedLink");
-      if (response.ok) {
-        output.innerHTML = `<strong>Generated Link:</strong><br><a href="${data.link}" target="_blank">${data.link}</a>`;
-      } else {
-        output.innerHTML = `<span style="color:red;">${data.message}</span>`;
-      }
+    const response = await fetch("https://lecturer-portal-jo84.onrender.com/generate-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ classTitle, expiryTime, allowedIP })
+    });
+
+    const data = await response.json();
+    const output = document.getElementById("generatedLink");
+    if (response.ok) {
+      output.innerHTML = `<strong>Generated Link:</strong><br><a href="${data.link}" target="_blank">${data.link}</a>`;
+    } else {
+      output.innerHTML = `<span style="color:red;">${data.message}</span>`;
     }
+}
+
   </script>
 </body>
 </html>
