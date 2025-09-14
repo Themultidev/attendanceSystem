@@ -41,7 +41,16 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 function extractIP(req) {
-  return req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  if (!ip) return "";
+
+  // If multiple IPs in x-forwarded-for, take the first
+  if (ip.includes(",")) {
+    ip = ip.split(",")[0];
+  }
+
+  // Normalize IPv4-mapped IPv6 (::ffff:1.2.3.4 → 1.2.3.4)
+  return ip.replace("::ffff:", "").trim();
 }
 
 // ✅ Step 1: Verify face embedding
@@ -62,8 +71,9 @@ app.post("/verify-face", async (req, res) => {
   const { classTitle, expiryTime, allowedIP } = decoded;
   const studentIp = extractIP(req);
 
-  // ✅ IP check
-  if (allowedIP && !studentIp.includes(allowedIP)) {
+  // ✅ Strict IP check
+  if (allowedIP && studentIp !== allowedIP) {
+    console.warn(`❌ IP mismatch: expected ${allowedIP}, got ${studentIp}`);
     return res.status(403).json({ message: "Access denied: invalid network" });
   }
 
