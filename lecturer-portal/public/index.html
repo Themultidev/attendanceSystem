@@ -24,7 +24,7 @@
       const expiryTime = document.getElementById("expiryTime").value;
       const allowedIP = document.getElementById("allowedIP").value;
 
-      const response = await fetch("http://localhost:7000/generate-link", {
+      const response = await fetch("https://lecturer-portal-jo84.onrender.com/generate-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ classTitle, expiryTime, allowedIP })
