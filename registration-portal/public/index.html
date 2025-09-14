@@ -27,12 +27,13 @@
     </div>
 
     <!-- Load Face API -->
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@latest/dist/face-api.min.js"></script>
+    <!-- Load face-api.js from CDN -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@latest/dist/face-api.min.js"></script>
 
+<!-- Your custom scripts (ES modules) -->
+<script type="module" src="./faceModel.js"></script>
+<script type="module" src="./script.js"></script>
 
-<!-- Your scripts -->
-<script defer type="module" src="faceModel.js"></script>
-<script defer type="module" src="script.js"></script>
 
 </body>
 </html>

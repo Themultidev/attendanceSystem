@@ -14,7 +14,7 @@ dist/
 build/
 
 # FaceAPI models (too large for GitHub)
-models/
+
 
 # DLLs (if you have Windows build artifacts or extra libs)
 *.dll
