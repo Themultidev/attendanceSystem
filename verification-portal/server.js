@@ -43,27 +43,20 @@ function cosineSimilarity(vecA, vecB) {
 function extractIP(req) {
   let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   if (!ip) return "";
-
-  // If multiple IPs in x-forwarded-for, take the first
-  if (ip.includes(",")) {
-    ip = ip.split(",")[0];
-  }
-
-  // Normalize IPv4-mapped IPv6 (::ffff:1.2.3.4 → 1.2.3.4)
+  if (ip.includes(",")) ip = ip.split(",")[0];
   return ip.replace("::ffff:", "").trim();
 }
 
 // ✅ Step 1: Verify face embedding
 app.post("/verify-face", async (req, res) => {
   const { token, faceEmbedding } = req.body;
-
   if (!token || !faceEmbedding) {
     return res.status(400).json({ message: "Missing token or face data" });
   }
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // ✅ same key as lecturer portal
+    decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
@@ -73,18 +66,16 @@ app.post("/verify-face", async (req, res) => {
 
   // ✅ Strict IP check
   if (allowedIP && studentIp !== allowedIP) {
-    console.warn(`❌ IP mismatch: expected ${allowedIP}, got ${studentIp}`);
     return res.status(403).json({ message: "Access denied: invalid network" });
   }
 
-  // ✅ Time check
+  // ✅ Expiry check
   const now = new Date();
   if (expiryTime && now > new Date(expiryTime)) {
     return res.status(403).json({ message: "Access denied: session expired" });
   }
 
   try {
-    // ✅ Authenticate main sheet (with face data)
     await authenticate(mainSheet);
     const mainRows = await mainSheet.sheetsByIndex[0].getRows();
 
@@ -111,7 +102,6 @@ app.post("/verify-face", async (req, res) => {
       return res.status(404).json({ message: "Face not recognized" });
     }
 
-    // ✅ Return student info for confirmation step
     return res.json({ student: match, classToken: token });
   } catch (err) {
     console.error("Verification error:", err);
@@ -122,19 +112,18 @@ app.post("/verify-face", async (req, res) => {
 // ✅ Step 2: Confirm & mark attendance
 app.post("/mark-attendance", async (req, res) => {
   const { matricNo, classToken } = req.body;
-
   if (!matricNo || !classToken) {
     return res.status(400).json({ message: "Missing matricNo or classToken" });
   }
 
   let decoded;
   try {
-    decoded = jwt.verify(classToken, process.env.JWT_SECRET_KEY); // ✅ same key
+    decoded = jwt.verify(classToken, process.env.JWT_SECRET_KEY);
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 
-  const { classTitle } = decoded; // ✅ matches lecturer payload
+  const { classTitle } = decoded;
 
   try {
     await authenticate(lecturerSheet);
@@ -158,13 +147,38 @@ app.post("/mark-attendance", async (req, res) => {
   }
 });
 
-// ✅ Serve frontend
+// ✅ Root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-// ✅ Serve /verify with same frontend
+
+// ✅ Locked /verify route
 app.get("/verify", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  const token = req.query.token;
+  if (!token) return res.status(400).send("❌ Missing token");
+
+  const studentIp = extractIP(req);
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const { expiryTime, allowedIP } = decoded;
+
+    // IP check
+    if (allowedIP && studentIp !== allowedIP) {
+      return res.status(403).send("❌ Access denied: invalid network");
+    }
+
+    // Expiry check
+    const now = new Date();
+    if (expiryTime && now > new Date(expiryTime)) {
+      return res.status(403).send("⏰ Link expired");
+    }
+
+    // ✅ If valid → serve the frontend
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  } catch (err) {
+    return res.status(401).send("❌ Invalid or expired link");
+  }
 });
 
 const PORT = process.env.PORT || 5000;
