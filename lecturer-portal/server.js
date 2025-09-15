@@ -23,6 +23,13 @@ app.post("/generate-link", (req, res) => {
     return res.status(400).json({ message: "Missing fields" });
   }
 
+  // 🔍 Debug log what the lecturer sent
+  console.log("📌 Received from frontend:");
+  console.log("   classTitle:", classTitle);
+  console.log("   expiryTime (raw from frontend):", expiryTime);
+  console.log("   expiryTime (as Date, UTC):", new Date(expiryTime).toISOString());
+  console.log("   allowedIP:", allowedIP);
+
   // ✅ expiryTime is already UTC (from frontend)
   const token = jwt.sign(
     {
@@ -31,10 +38,10 @@ app.post("/generate-link", (req, res) => {
       allowedIP,
     },
     SECRET_KEY
-    // ❌ removed { expiresIn: "2h" }
   );
 
   const fullLink = `https://verificationpage.onrender.com/verify?token=${token}`;
+  console.log("✅ Generated link:", fullLink); // 🔍 Debug log the final link
   res.json({ link: fullLink });
 });
 

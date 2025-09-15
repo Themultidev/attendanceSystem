@@ -58,20 +58,26 @@ app.post("/verify-face", async (req, res) => {
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
   } catch (err) {
+    console.error("❌ JWT verify failed in /verify-face:", err.message);
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 
   const { classTitle, expiryTime, allowedIP } = decoded;
   const studentIp = extractIP(req);
 
+  console.log("🌐 /verify-face -> Incoming IP:", studentIp);
+  console.log("🔑 Decoded token:", decoded);
+
   // ✅ Strict IP check
   if (allowedIP && studentIp !== allowedIP) {
+    console.warn(`❌ IP mismatch: expected ${allowedIP}, got ${studentIp}`);
     return res.status(403).json({ message: "Access denied: invalid network" });
   }
 
   // ✅ Expiry check
   const now = new Date();
   if (expiryTime && now > new Date(expiryTime)) {
+    console.warn("⏰ Link expired. Now:", now, "Expiry:", new Date(expiryTime));
     return res.status(403).json({ message: "Access denied: session expired" });
   }
 
@@ -120,6 +126,7 @@ app.post("/mark-attendance", async (req, res) => {
   try {
     decoded = jwt.verify(classToken, process.env.JWT_SECRET_KEY);
   } catch (err) {
+    console.error("❌ JWT verify failed in /mark-attendance:", err.message);
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 
@@ -147,36 +154,41 @@ app.post("/mark-attendance", async (req, res) => {
   }
 });
 
-// ✅ Root route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
 // ✅ Locked /verify route
 app.get("/verify", (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send("❌ Missing token");
 
   const studentIp = extractIP(req);
+  console.log("🌐 /verify -> Incoming IP:", studentIp);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     const { expiryTime, allowedIP } = decoded;
 
+    console.log("🔑 Decoded token:", decoded);
+    console.log("🕒 Now:", new Date().toISOString());
+    console.log("⏰ Expiry:", expiryTime, "->", new Date(expiryTime).toISOString());
+    console.log("📌 Allowed IP:", allowedIP);
+
     // IP check
     if (allowedIP && studentIp !== allowedIP) {
+      console.warn(`❌ IP mismatch. Expected ${allowedIP}, got ${studentIp}`);
       return res.status(403).send("❌ Access denied: invalid network");
     }
 
     // Expiry check
     const now = new Date();
     if (expiryTime && now > new Date(expiryTime)) {
+      console.warn("⏰ Link expired. Now:", now, "Expiry:", new Date(expiryTime));
       return res.status(403).send("⏰ Link expired");
     }
 
     // ✅ If valid → serve the frontend
+    console.log("✅ Token valid. Serving verification page.");
     res.sendFile(path.join(__dirname, "public", "index.html"));
   } catch (err) {
+    console.error("❌ JWT verify failed in /verify:", err.message);
     return res.status(401).send("❌ Invalid or expired link");
   }
 });
